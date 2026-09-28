@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Crush Cost – Contract Crushing Job Estimator</title>
+<meta name="description" content="Estimate the cost and quote price of a contract crushing job.">
+<meta name="theme-color" content="#262B30">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Crush Cost">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --stone:#D9DDE0; --slab:#F4F5F6; --basalt:#262B30; --ink:#1F2428; --dust:#646C73;
+  --line:#BCC3C8; --field:#FFFFFF; --hivis:#F26A1B; --hivis-soft:#FDE3D4; --ok:#2E7D4F;
+  --sans:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+  --cond:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  box-sizing:border-box;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --stone:#1B1F22; --slab:#252A2E; --basalt:#111417; --ink:#E6E9EB; --dust:#9AA3AA;
+    --line:#3A4248; --field:#1E2226; --hivis-soft:#4A2A18;
+  }
+}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%;margin:0}
+body{background:var(--stone);color:var(--ink);font:16px/1.45 var(--sans);-webkit-text-size-adjust:100%}
+header.top{position:sticky;top:0;z-index:20;background:var(--basalt);color:#fff;
+  padding:calc(env(safe-area-inset-top,0px) + 10px) 16px 10px;display:flex;align-items:center;gap:12px}
+.brand{font:700 22px/1 var(--cond);letter-spacing:.02em;white-space:nowrap}
+.brand b{color:var(--hivis)}
+.jobname{flex:1;min-width:0;font-size:14px;color:#C9D0D5;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.iconbtn{background:none;border:1px solid #4A535A;color:#fff;border-radius:8px;padding:8px 12px;font:600 14px var(--sans);cursor:pointer}
+main{max-width:760px;margin:0 auto;padding:12px 12px 190px}
+section.tab{display:none}
+section.tab.on{display:block}
+h2{font:700 26px/1.1 var(--cond);margin:14px 4px 10px;color:var(--ink)}
+h3{font:600 19px/1.2 var(--cond);margin:0;letter-spacing:.01em}
+.panel{background:var(--slab);border:1px solid var(--line);border-radius:12px;margin:0 0 12px;overflow:hidden}
+.panel>summary,.panel>.ph{list-style:none;padding:14px 16px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.panel>summary::-webkit-details-marker{display:none}
+.panel>summary::after{content:"";margin-left:auto;width:10px;height:10px;border-right:2px solid var(--dust);border-bottom:2px solid var(--dust);transform:rotate(45deg);transition:transform .15s}
+.panel[open]>summary::after{transform:rotate(-135deg)}
+.pbody{padding:0 16px 14px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 12px}
+.grid>*{min-width:0}
+.grid .wide{grid-column:1/-1}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--dust);font-weight:500}
+.inwrap{display:flex;align-items:center;background:var(--field);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.inwrap:focus-within{border-color:var(--hivis);box-shadow:0 0 0 2px var(--hivis-soft)}
+.inwrap input,.inwrap select{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font:500 16px var(--sans);padding:10px}
+.inwrap input:focus,.inwrap select:focus{outline:none}
+.inwrap .u{padding:0 10px;font-size:13px;color:var(--dust);white-space:nowrap}
+.hint{font-size:12px;color:var(--dust);margin:8px 0 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{background:var(--stone);border-radius:8px;padding:6px 10px;font-size:13px}
+.chip b{font:600 17px var(--cond);display:block;color:var(--ink)}
+.sw{position:relative;display:inline-flex;align-items:center;gap:10px;font-size:15px;color:var(--ink);cursor:pointer}
+.sw input{position:absolute;opacity:0;width:1px;height:1px}
+.sw i{width:44px;height:26px;border-radius:13px;background:var(--line);position:relative;flex:none;transition:background .15s}
+.sw i::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .15s}
+.sw input:checked+i{background:var(--hivis)}
+.sw input:checked+i::after{transform:translateX(18px)}
+.sw input:focus-visible+i{outline:2px solid var(--hivis);outline-offset:2px}
+.item.off>summary .iname{color:var(--dust);text-decoration:line-through}
+.iname{font-weight:600;flex:1;min-width:0}
+.ival{font:600 16px var(--cond);color:var(--dust);white-space:nowrap}
+.row-actions{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:10px}
+.btn{border:1px solid var(--line);background:var(--field);color:var(--ink);border-radius:8px;padding:10px 14px;font:600 15px var(--sans);cursor:pointer}
+.btn.primary{background:var(--hivis);border-color:var(--hivis);color:#1a1a1a}
+.btn.danger{color:#B3261E}
+.btn:focus-visible,.iconbtn:focus-visible,.panel>summary:focus-visible,nav button:focus-visible{outline:2px solid var(--hivis);outline-offset:2px}
+.addbtn{width:100%;border:1.5px dashed var(--line);background:transparent;color:var(--ink);border-radius:12px;padding:14px;font:600 15px var(--sans);cursor:pointer;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:8px 6px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+th{font-weight:600;color:var(--dust);font-size:12px}
+tr.tot td{font-weight:700;border-top:2px solid var(--ink)}
+.bar{height:6px;background:var(--stone);border-radius:3px;margin-top:4px}
+.bar span{display:block;height:100%;background:var(--basalt);border-radius:3px}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .bar span{background:#8D979E}}
+.sens td{font-variant-numeric:tabular-nums}
+.sens td.base{background:var(--hivis-soft);font-weight:700}
+.bigprice{padding:18px 16px;background:var(--basalt);color:#fff;border-radius:12px;margin-bottom:12px}
+.bigprice .lab{font-size:14px;color:#C9D0D5}
+.bigprice .num{font:700 56px/1 var(--cond);color:var(--hivis);letter-spacing:-.01em}
+.bigprice .sub{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px;font-size:14px;color:#DDE2E5}
+.bigprice .sub b{font:600 18px var(--cond);color:#fff}
+/* readout + nav */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--basalt);color:#fff;padding-bottom:env(safe-area-inset-bottom,0px)}
+.readout{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;max-width:760px;margin:0 auto;padding:10px 16px 8px;border-bottom:1px solid #3A4248}
+.readout .k{font-size:12px;color:#AEB7BD}
+.readout .v{font:700 26px/1 var(--cond)}
+.readout .v.q{color:var(--hivis);font-size:34px}
+.readout .r{text-align:right}
+nav{display:flex;max-width:760px;margin:0 auto}
+nav button{flex:1;background:none;border:0;color:#AEB7BD;font:600 15px var(--sans);padding:12px 4px 12px;cursor:pointer;border-top:3px solid transparent}
+nav button[aria-selected="true"]{color:#fff;border-top-color:var(--hivis)}
+/* jobs sheet */
+dialog{border:0;border-radius:14px;padding:0;width:min(560px,94vw);max-height:86vh;background:var(--slab);color:var(--ink)}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+.dh{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+.db{padding:12px 16px 16px;overflow:auto;max-height:70vh}
+.joblist{list-style:none;margin:0;padding:0}
+.joblist li{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}
+.joblist li .jn{flex:1;min-width:0}
+.joblist li .jn small{display:block;color:var(--dust)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--stone);padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50}
+.toast.show{opacity:1}
+.src{font-size:12px;color:var(--dust)}
+.src li{margin-bottom:6px}
+@media (max-width:340px){.grid{grid-template-columns:minmax(0,1fr)}}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+@media print{
+  header.top,.dock,.noprint,nav{display:none!important}
+  section.tab{display:none!important} #tab-result{display:block!important}
+  body{background:#fff;color:#000} main{padding:0}
+  .bigprice{background:#fff;color:#000;border:2px solid #000}.bigprice .num{color:#000}.bigprice .sub,.bigprice .sub b,.bigprice .lab{color:#000}
+}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">Crush<b>Cost</b></div>
+  <div class="jobname" id="hdrJob"></div>
+  <button class="iconbtn" id="btnJobs" aria-haspopup="dialog">Jobs</button>
+</header>
+
+<main>
+  <section class="tab on" id="tab-job" aria-label="Job"></section>
+  <section class="tab" id="tab-plant" aria-label="Plant"></section>
+  <section class="tab" id="tab-crew" aria-label="Crew"></section>
+  <section class="tab" id="tab-site" aria-label="Site and overheads"></section>
+  <section class="tab" id="tab-result" aria-label="Result"></section>
+</main>
+
+<div class="dock">
+  <div class="readout" aria-live="polite">
+    <div><div class="k">Cost per tonne</div><div class="v" id="roCost">–</div></div>
+    <div><div class="k">Days on site</div><div class="v" id="roDays">–</div></div>
+    <div class="r"><div class="k">Quote per tonne (ex GST)</div><div class="v q" id="roQuote">–</div></div>
+  </div>
+  <nav role="tablist">
+    <button role="tab" data-tab="job" aria-selected="true">Job</button>
+    <button role="tab" data-tab="plant" aria-selected="false">Plant</button>
+    <button role="tab" data-tab="crew" aria-selected="false">Crew</button>
+    <button role="tab" data-tab="site" aria-selected="false">Site</button>
+    <button role="tab" data-tab="result" aria-selected="false">Result</button>
+  </nav>
+</div>
+
+<dialog id="dlgJobs" aria-labelledby="dlgTitle">
+  <div class="dh"><h3 id="dlgTitle">Saved jobs</h3><button class="btn" id="dlgClose">Close</button></div>
+  <div class="db">
+    <div class="row-actions" style="margin-top:0;flex-wrap:wrap">
+      <button class="btn primary" id="btnSave">Save this job</button>
+      <button class="btn" id="btnNew">New job</button>
+      <button class="btn" id="btnDefaults">Use fleet & crew as defaults</button>
+    </div>
+    <p class="hint">Jobs are saved on this phone only. Use “Back up all jobs” to keep a copy or move them to another device.</p>
+    <ul class="joblist" id="jobList"></ul>
+    <div class="row-actions" style="flex-wrap:wrap">
+      <button class="btn" id="btnBackup">Back up all jobs</button>
+      <label class="btn" style="display:inline-block">Restore backup<input type="file" id="fileRestore" accept="application/json" hidden></label>
+    </div>
+  </div>
+</dialog>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+"use strict";
+/* ---------------- Default data (researched 28-Sep-2026 + estimates) ---------------- */
+const MATERIALS = [
+  ["Soft – limestone/sandstone",0.5],["Recycled concrete/brick/asphalt",0.7],
+  ["Medium – gravel/river rock",1.0],["Hard rock – basalt/granite",1.4],
+  ["Very abrasive – quartzite/ironstone",2.0]];
+const P = (name,inc,qty,val,res,life,ann,rate,ins,rego,use,fuel,ftc,rm,wear,loads)=>({name,inc,qty,val,res,life,ann,rate,ins,rego,use,fuel,ftc,rm,wear,loads});
+function defaults(){
+  return {
+    v:1,
+    job:{name:"Example – 50,000 t DGB20 road base",client:"Example Quarry Pty Ltd",loc:"Central West NSW",
+      date:new Date().toISOString().slice(0,10),mat:"Hard rock – basalt/granite",prod:"DGB20 road base",
+      tonnes:50000,tph:220,eff:.80,avail:.90,shift:10,nonprod:1,spd:1,dpw:5,setup:1,pack:1,
+      dist:250,remote:true,wkend:false,tgp:269.0,dmarg:10,ftc:53.7,cont:.05,margin:.15},
+    materials:MATERIALS.map(([n,f])=>({n,f})),
+    plant:[
+      P("Primary jaw crusher (tracked)",true,1,950000,.25,20000,2000,.074,.015,2000,1,20,true,35,.12,1),
+      P("Secondary cone crusher (tracked)",true,1,1100000,.25,20000,2000,.074,.015,2000,1,25,true,40,.25,1),
+      P("Tertiary cone / VSI (tracked)",false,1,1000000,.25,20000,2000,.074,.015,2000,1,25,true,40,.30,1),
+      P("Triple-deck screen (tracked)",true,1,650000,.25,20000,2000,.074,.015,2000,1,12,true,25,.06,1),
+      P("Scalper / pre-screen (tracked)",false,1,500000,.25,20000,2000,.074,.015,2000,1,10,true,20,.03,1),
+      P("Tracked stacker conveyor",false,1,180000,.20,20000,2000,.074,.015,1000,1,4,true,8,0,1),
+      P("Wheel loader ~25 t",true,1,750000,.30,15000,2000,.074,.015,2500,1,22,true,45,0,1),
+      P("Excavator ~30 t (feed / breaker)",true,1,450000,.30,15000,2000,.074,.015,2000,1,20,true,35,0,1),
+      P("Water cart 10–13 kL",true,1,220000,.25,12000,1500,.074,.015,3500,.4,12,true,20,0,0),
+      P("Service truck / mobile workshop",true,1,180000,.25,12000,1500,.074,.015,3000,.3,6,false,15,0,0),
+      P("Crew ute",true,1,75000,.30,10000,1500,.074,.02,1500,.5,4,false,8,0,0),
+      P("Lighting tower / generator",false,2,30000,.20,15000,2000,.074,.015,0,.3,1.5,true,3,0,.5),
+      P("Site crib / toilet hut (owned)",true,1,40000,.20,20000,2000,.074,.015,0,1,0,true,2,0,.5)],
+    oncost:{sup:.12,ptax:.0545,wc:.04,leave:.11,other:.02},
+    crew:[
+      {role:"Crushing supervisor / leading hand",inc:true,qty:1,rate:60,ord:7.6,ot:1.5,allow:25},
+      {role:"Crusher / plant operator",inc:true,qty:1,rate:50,ord:7.6,ot:1.5,allow:25},
+      {role:"Loader operator",inc:true,qty:1,rate:45,ord:7.6,ot:1.5,allow:25},
+      {role:"Excavator operator",inc:true,qty:1,rate:45,ord:7.6,ot:1.5,allow:25},
+      {role:"Fitter (share of time)",inc:true,qty:.3,rate:58,ord:7.6,ot:1.5,allow:25},
+      {role:"Labourer / spotter",inc:false,qty:1,rate:38,ord:7.6,ot:1.5,allow:25},
+      {role:"Relief / second-shift operator",inc:false,qty:1,rate:50,ord:7.6,ot:1.5,allow:25}],
+    mob:{floatRate:300,speed:60,loadHrs:2,permit:150,pilotShare:.5,pilotRate:110,crewSpeed:90,accom:160,meals:80,testFreq:2000},
+    site:[
+      {name:"Site establishment / pad preparation",basis:"lump",qty:1,rate:3000},
+      {name:"Inductions & medicals",basis:"person",qty:1,rate:350},
+      {name:"Crib / toilet servicing & pump-out",basis:"week",qty:1,rate:250},
+      {name:"NATA product testing",basis:"test",qty:1,rate:400},
+      {name:"Stockpile survey (opening & closing)",basis:"fixed",qty:2,rate:1500},
+      {name:"Dust / noise monitoring",basis:"week",qty:1,rate:300},
+      {name:"Grease, top-up oils, PPE & consumables",basis:"hour",qty:1,rate:8},
+      {name:"Scrap steel / contaminant disposal",basis:"lump",qty:1,rate:500},
+      {name:"Breakdown / call-out allowance",basis:"week",qty:1,rate:500},
+      {name:"Job-specific insurance / bonds",basis:"lump",qty:1,rate:1000}],
+    overheads:{hours:1800,items:[
+      {name:"Owner / manager salary & on-costs",amt:200000},{name:"Office & admin staff",amt:120000},
+      {name:"Yard / workshop lease & utilities",amt:60000},{name:"Business insurance",amt:80000},
+      {name:"Accounting, legal & banking",amt:25000},{name:"Software, telematics & phones",amt:15000},
+      {name:"Estimating, tendering & marketing",amt:15000},{name:"WHS systems & training",amt:15000},
+      {name:"Workshop tools & yard equipment",amt:10000},{name:"Other",amt:10000}]}
+  };
+}
+const BASIS = {lump:"Lump sum",fixed:"Fixed quantity",person:"Per person",week:"Per week",test:"Per test",hour:"Per crushing hour"};
+
+/* ---------------- Storage (guarded) ---------------- */
+const KEY_CUR="crushcost.current", KEY_JOBS="crushcost.jobs", KEY_DEF="crushcost.defaults";
+const store = {
+  get(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
+};
+function baseState(){
+  const d=defaults(), my=store.get(KEY_DEF);
+  if(my){["plant","crew","oncost","mob","site","overheads","materials"].forEach(k=>{if(my[k])d[k]=my[k]});}
+  return d;
+}
+let S = store.get(KEY_CUR) || baseState();
+let saveTimer=null;
+function autosave(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>store.set(KEY_CUR,S),400)}
+
+/* ---------------- Formatting ---------------- */
+const nf=(dp)=>new Intl.NumberFormat("en-AU",{minimumFractionDigits:dp,maximumFractionDigits:dp});
+const $=(v,dp=0)=>(v<0?"-":"")+"$"+nf(dp).format(Math.abs(isFinite(v)?v:0));
+const n=(v,dp=0)=>nf(dp).format(isFinite(v)?v:0);
+const pct=(v,dp=1)=>nf(dp).format((isFinite(v)?v:0)*100)+"%";
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const num=v=>{const x=parseFloat(v);return isFinite(x)?x:0};
+const div=(a,b)=>b?a/b:0;
+
+/* ---------------- Calculation engine (mirrors the spreadsheet) ---------------- */
+function calc(s){
+  const j=s.job, R={};
+  R.etph=j.tph*j.eff;
+  R.hrs=div(j.tonnes,R.etph);
+  R.hps=(j.shift-j.nonprod)*j.avail;
+  R.cdays=Math.ceil(div(R.hrs,R.hps*j.spd)-1e-9);
+  R.sdays=R.cdays+j.setup+j.pack;
+  R.weeks=div(R.sdays,j.dpw);
+  R.nights=j.remote?(j.wkend?Math.ceil(div(R.sdays*7,j.dpw)-1e-9):R.sdays):0;
+  R.shifts=R.sdays*j.spd;
+  R.dnet=(j.tgp/1.1+j.dmarg-j.ftc)/100;
+  R.dnetNe=(j.tgp/1.1+j.dmarg)/100;
+  const m=s.materials.find(x=>x.n===j.mat); R.abr=m?m.f:1;
+  // plant
+  const pt={own:0,fuel:0,rm:0,wear:0,litres:0,loads:0,engine:0};
+  R.plant=s.plant.map(p=>{
+    const dep=div(p.val*(1-p.res),p.life), int=div(p.val*(1+p.res)/2*p.rate,p.ann), ins=div(p.val*p.ins+p.rego,p.ann);
+    const own=dep+int+ins, fuelHr=p.fuel*(p.ftc?R.dnet:R.dnetNe), tot=own+fuelHr+p.rm;
+    const eh=p.inc?p.qty*p.use*R.hrs:0;
+    const o={dep,int,ins,own,fuelHr,tot,eh,ownJ:eh*own,fuelJ:eh*fuelHr,rmJ:eh*p.rm,wearJ:p.inc?p.wear*R.abr*j.tonnes:0,litres:eh*p.fuel};
+    o.job=o.ownJ+o.fuelJ+o.rmJ+o.wearJ;
+    pt.own+=o.ownJ;pt.fuel+=o.fuelJ;pt.rm+=o.rmJ;pt.wear+=o.wearJ;pt.litres+=o.litres;pt.engine+=eh;
+    if(p.inc)pt.loads+=p.qty*p.loads;
+    return o;
+  });
+  R.pt=pt;
+  // labour
+  const oc=s.oncost; R.onc=oc.sup+oc.ptax+oc.wc+oc.leave+oc.other;
+  let head=0,crewShift=0,lab=0;
+  R.crew=s.crew.map(c=>{
+    const ot=Math.max(0,j.shift-c.ord), cps=c.rate*Math.min(c.ord,j.shift)+c.rate*ot*c.ot+c.allow;
+    const loaded=(cps-c.allow)*(1+R.onc)+c.allow, tot=c.inc?c.qty*loaded*R.shifts:0;
+    if(c.inc){head+=c.qty;crewShift+=c.qty*loaded}
+    lab+=tot; return {ot,loaded,hr:div(loaded,j.shift),tot};
+  });
+  R.head=head;R.crewShift=crewShift;R.avgRate=div(div(crewShift,head),j.shift);R.labour=lab;
+  // mob
+  const mb=s.mob;
+  R.floatHrs=div(2*j.dist,mb.speed)+mb.loadHrs;
+  R.floatCost=pt.loads*R.floatHrs*mb.floatRate*2;
+  R.permits=pt.loads*2*mb.permit+pt.loads*2*mb.pilotShare*div(2*j.dist,mb.speed)*mb.pilotRate;
+  R.mob=R.floatCost+R.permits;
+  R.crewOnSite=head*j.spd;
+  R.trips=j.remote?(j.wkend?1:Math.ceil(R.weeks-1e-9)):0;
+  R.travelHrs=div(2*j.dist,mb.crewSpeed);
+  R.travel=R.crewOnSite*R.trips*R.travelHrs*R.avgRate;
+  R.accom=R.crewOnSite*R.nights*(mb.accom+mb.meals);
+  // site
+  R.tests=Math.ceil(div(j.tonnes,mb.testFreq)-1e-9);
+  const q={lump:()=>1,person:()=>R.crewOnSite,week:()=>R.weeks,test:()=>R.tests,hour:()=>R.hrs};
+  R.site=s.site.map(x=>{const qty=x.basis==="fixed"?x.qty:(q[x.basis]||(()=>1))();return {qty,amt:qty*x.rate}});
+  R.siteTot=R.site.reduce((a,b)=>a+b.amt,0);
+  // overheads
+  R.ohAnnual=s.overheads.items.reduce((a,b)=>a+b.amt,0);
+  R.ohRate=div(R.ohAnnual,s.overheads.hours);
+  R.oh=R.ohRate*R.hrs;
+  R.cats=[
+    ["Labour (incl. on-costs & allowances)",R.labour,"Time"],
+    ["Plant ownership",pt.own,"Time"],
+    ["Fuel (net of fuel tax credits)",pt.fuel,"Fuel"],
+    ["Repairs & maintenance",pt.rm,"Time"],
+    ["Crushing & screening wear parts",pt.wear,"Tonnage"],
+    ["Mobilisation & demobilisation",R.mob,"Fixed"],
+    ["Crew travel",R.travel,"Time"],
+    ["Accommodation & meals",R.accom,"Time"],
+    ["Site costs",R.siteTot,"Fixed"],
+    ["Overhead recovery",R.oh,"Time"]];
+  R.sub=R.cats.reduce((a,c)=>a+c[1],0);
+  R.contA=R.sub*j.cont; R.total=R.sub+R.contA;
+  R.price=j.margin<1?R.total/(1-j.margin):0;
+  R.costT=div(R.total,j.tonnes); R.priceT=div(R.price,j.tonnes); R.gp=R.price-R.total;
+  const by=t=>R.cats.filter(c=>c[2]===t).reduce((a,c)=>a+c[1],0);
+  R.sens=(tf,df)=>div((1+j.cont)*((by("Time")+by("Fuel")*(1+df))/(1+tf)+by("Tonnage")+by("Fixed")),j.tonnes);
+  return R;
+}
+
+/* ---------------- Field builders ---------------- */
+// field(path, label, type, unit, opts)  type: num | pct | text | date | select | bool
+function get(path){return path.split(".").reduce((o,k)=>o?.[k],S)}
+function fieldHTML(path,label,type="num",unit="",extra={}){
+  const v=get(path), id="f_"+path.replace(/\./g,"_");
+  const wide=extra.wide?" wide":"";
+  if(type==="bool") return `<div class="f${wide}" style="align-self:end"><label class="sw"><input type="checkbox" id="${id}" data-path="${path}" data-type="bool" ${v?"checked":""}><i></i>${esc(label)}</label></div>`;
+  let input;
+  if(type==="select") input=`<select id="${id}" data-path="${path}" data-type="text">${extra.options.map(o=>`<option value="${esc(o[0])}" ${o[0]===v?"selected":""}>${esc(o[1])}</option>`).join("")}</select>`;
+  else {
+    const shown=type==="pct"?+(v*100).toFixed(4):v;
+    const it=type==="text"?"text":type==="date"?"date":"text";
+    const im=(type==="num"||type==="pct")?' inputmode="decimal"':"";
+    input=`<input id="${id}" type="${it}"${im} value="${esc(shown)}" data-path="${path}" data-type="${type}" autocomplete="off">`;
+  }
+  return `<label class="f${wide}" for="${id}">${esc(label)}<span class="inwrap">${input}${unit?`<span class="u">${esc(unit)}</span>`:""}</span></label>`;
+}
+function panel(title,body,open=false,cls="",tail=""){
+  return `<details class="panel ${cls}" ${open?"open":""}><summary><h3 class="iname">${title}</h3>${tail}</summary><div class="pbody">${body}</div></details>`;
+}
+
+/* ---------------- Tab renderers ---------------- */
+function renderJob(){
+  const matOpts=S.materials.map(m=>[m.n,m.n]);
+  document.getElementById("tab-job").innerHTML=`
+  <h2>Job</h2>
+  ${panel("Job details",`<div class="grid">
+    ${fieldHTML("job.name","Job name","text","",{wide:1})}
+    ${fieldHTML("job.client","Client","text")}
+    ${fieldHTML("job.loc","Site location","text")}
+    ${fieldHTML("job.date","Quote date","date")}
+    ${fieldHTML("job.prod","Product(s)","text")}
+    ${fieldHTML("job.mat","Material type (sets wear-part factor)","select","",{wide:1,options:matOpts})}
+  </div>`,true)}
+  ${panel("Production",`<div class="grid">
+    ${fieldHTML("job.tonnes","Tonnes to crush","num","t")}
+    ${fieldHTML("job.tph","Design throughput","num","tph")}
+    ${fieldHTML("job.eff","Operating efficiency","pct","%")}
+    ${fieldHTML("job.avail","Mechanical availability","pct","%")}
+    ${fieldHTML("job.shift","Shift length (paid)","num","hrs")}
+    ${fieldHTML("job.nonprod","Non-productive per shift","num","hrs")}
+    ${fieldHTML("job.spd","Shifts per day","num")}
+    ${fieldHTML("job.dpw","Days worked per week","num","days")}
+    ${fieldHTML("job.setup","Set-up days","num","days")}
+    ${fieldHTML("job.pack","Pack-down days","num","days")}
+  </div>
+  <p class="hint">Efficiency covers feed interruptions, blockages and wet feed (75–85% is typical). Non-productive time is pre-starts, greasing, breaks and clean-up.</p>
+  <div class="chips" id="schedChips"></div>`,true)}
+  ${panel("Location",`<div class="grid">
+    ${fieldHTML("job.dist","Distance from base (one way)","num","km",{wide:1})}
+    ${fieldHTML("job.remote","Crew accommodated near site","bool")}
+    ${fieldHTML("job.wkend","Crew stays over weekends","bool")}
+  </div>`)}
+  ${panel("Fuel",`<div class="grid">
+    ${fieldHTML("job.tgp","Diesel terminal gate price (incl GST)","num","c/L",{wide:1})}
+    ${fieldHTML("job.dmarg","Delivery margin (ex GST)","num","c/L")}
+    ${fieldHTML("job.ftc","Fuel tax credit, off-road","num","c/L")}
+  </div>
+  <p class="hint">Default TGP is the national average of 269.0 c/L on 25 Sep 2026. Check the latest at aip.com.au and the fuel tax credit rate on the ATO calculator – both change during the year.</p>
+  <div class="chips" id="fuelChips"></div>`)}
+  ${panel("Margin & contingency",`<div class="grid">
+    ${fieldHTML("job.cont","Contingency on cost","pct","%")}
+    ${fieldHTML("job.margin","Target margin on price","pct","%")}
+  </div>`)}`;
+}
+function plantItem(p,i){
+  const f=k=>`plant.${i}.${k}`;
+  return `<details class="panel item ${p.inc?"":"off"}" data-kind="plant" data-i="${i}">
+    <summary><span class="iname">${esc(p.name)}</span><span class="ival" id="pv_${i}"></span></summary>
+    <div class="pbody"><div class="grid">
+      ${fieldHTML(f("name"),"Item name","text","",{wide:1})}
+      ${fieldHTML(f("inc"),"Use on this job","bool")}
+      ${fieldHTML(f("qty"),"Quantity","num")}
+      ${fieldHTML(f("val"),"Replacement / book value","num","$")}
+      ${fieldHTML(f("res"),"Residual value","pct","%")}
+      ${fieldHTML(f("life"),"Economic life","num","hrs")}
+      ${fieldHTML(f("ann"),"Annual operating hours","num","hrs")}
+      ${fieldHTML(f("rate"),"Finance rate","pct","%")}
+      ${fieldHTML(f("ins"),"Insurance per year","pct","% of value")}
+      ${fieldHTML(f("rego"),"Rego & admin per year","num","$")}
+      ${fieldHTML(f("use"),"Usage (× crushing hours)","num","x")}
+      ${fieldHTML(f("fuel"),"Fuel burn","num","L/hr")}
+      ${fieldHTML(f("rm"),"Repairs & maintenance","num","$/hr")}
+      ${fieldHTML(f("wear"),"Wear parts (medium rock)","num","$/t")}
+      ${fieldHTML(f("loads"),"Float loads each way","num")}
+      ${fieldHTML(f("ftc"),"Claims off-road fuel credit","bool")}
+    </div>
+    <div class="chips" id="pc_${i}"></div>
+    <div class="row-actions"><span></span><button class="btn danger" data-del="plant" data-i="${i}">Remove item</button></div>
+    </div></details>`;
+}
+function renderPlant(){
+  document.getElementById("tab-plant").innerHTML=`<h2>Plant & equipment</h2>
+  <p class="hint" style="margin:0 4px 12px">Tap an item to edit it. Switch off anything not going to this job. Ownership cost is depreciation, interest on average investment, and insurance and rego, spread over annual hours.</p>
+  <div id="plantList">${S.plant.map(plantItem).join("")}</div>
+  <button class="addbtn" data-add="plant">Add plant item</button>
+  <div class="chips" id="plantTot"></div>`;
+}
+function crewItem(c,i){
+  const f=k=>`crew.${i}.${k}`;
+  return `<details class="panel item ${c.inc?"":"off"}" data-kind="crew" data-i="${i}">
+    <summary><span class="iname">${esc(c.role)}</span><span class="ival" id="cv_${i}"></span></summary>
+    <div class="pbody"><div class="grid">
+      ${fieldHTML(f("role"),"Role","text","",{wide:1})}
+      ${fieldHTML(f("inc"),"On this job","bool")}
+      ${fieldHTML(f("qty"),"Headcount per shift","num")}
+      ${fieldHTML(f("rate"),"Base hourly rate","num","$/hr")}
+      ${fieldHTML(f("ord"),"Ordinary hours per shift","num","hrs")}
+      ${fieldHTML(f("ot"),"Overtime multiplier","num","x")}
+      ${fieldHTML(f("allow"),"Allowances per shift","num","$")}
+    </div>
+    <div class="chips" id="cc_${i}"></div>
+    <div class="row-actions"><span></span><button class="btn danger" data-del="crew" data-i="${i}">Remove role</button></div>
+    </div></details>`;
+}
+function renderCrew(){
+  document.getElementById("tab-crew").innerHTML=`<h2>Crew</h2>
+  ${panel("Employment on-costs",`<div class="grid">
+    ${fieldHTML("oncost.sup","Superannuation","pct","%")}
+    ${fieldHTML("oncost.ptax","Payroll tax (NSW)","pct","%")}
+    ${fieldHTML("oncost.wc","Workers compensation","pct","%")}
+    ${fieldHTML("oncost.leave","Leave & LSL provisions","pct","%")}
+    ${fieldHTML("oncost.other","Training, PPE & medicals","pct","%")}
+  </div><p class="hint">Super is 12% from 1 July 2025. Set payroll tax to 0% if your wages are under the NSW threshold, and leave provisions to 0% for casuals.</p><div class="chips" id="oncChips"></div>`)}
+  <div id="crewList">${S.crew.map(crewItem).join("")}</div>
+  <button class="addbtn" data-add="crew">Add role</button>
+  <p class="hint" style="margin:0 4px">Award floor: Quarrying Award Level 1 is $26.67/hr from 1 July 2026. Advertised crushing operator rates in Sep 2026 ranged from $35–45/hr (Sydney) to $55–70/hr (FIFO WA).</p>`;
+}
+function siteItem(x,i){
+  const f=k=>`site.${i}.${k}`;
+  return `<details class="panel item" data-kind="site" data-i="${i}">
+    <summary><span class="iname">${esc(x.name)}</span><span class="ival" id="sv_${i}"></span></summary>
+    <div class="pbody"><div class="grid">
+      ${fieldHTML(f("name"),"Item","text","",{wide:1})}
+      ${fieldHTML(f("basis"),"Charged","select","",{options:Object.entries(BASIS)})}
+      ${fieldHTML(f("rate"),"Rate","num","$")}
+      ${fieldHTML(f("qty"),"Quantity (fixed quantity only)","num","",{wide:1})}
+    </div>
+    <div class="row-actions"><span class="hint" id="sq_${i}"></span><button class="btn danger" data-del="site" data-i="${i}">Remove</button></div>
+    </div></details>`;
+}
+function renderSite(){
+  document.getElementById("tab-site").innerHTML=`<h2>Moving, travel & site</h2>
+  ${panel("Floating the plant",`<div class="grid">
+    ${fieldHTML("mob.floatRate","Float rate incl. driver","num","$/hr",{wide:1})}
+    ${fieldHTML("mob.speed","Average float speed","num","km/h")}
+    ${fieldHTML("mob.loadHrs","Load & unload per load","num","hrs")}
+    ${fieldHTML("mob.permit","Oversize permit per load","num","$")}
+    ${fieldHTML("mob.pilotShare","Loads needing a pilot","pct","%")}
+    ${fieldHTML("mob.pilotRate","Pilot vehicle rate","num","$/hr",{wide:1})}
+  </div><p class="hint">Float loads come from the Plant tab. Each load is costed as a return trip, both in and out.</p><div class="chips" id="mobChips"></div>`,true)}
+  ${panel("Crew travel & accommodation",`<div class="grid">
+    ${fieldHTML("mob.crewSpeed","Crew travel speed","num","km/h",{wide:1})}
+    ${fieldHTML("mob.accom","Accommodation","num","$/night")}
+    ${fieldHTML("mob.meals","Meals / living away","num","$/night")}
+  </div><p class="hint">Crew travel is paid once a week when they go home, or once per job if they stay over weekends. Local jobs have no travel or accommodation.</p><div class="chips" id="travChips"></div>`)}
+  ${panel("Site costs",`<div class="grid">${fieldHTML("mob.testFreq","One NATA test every","num","t",{wide:1})}</div>
+    <div id="siteList" style="margin-top:12px">${S.site.map(siteItem).join("")}</div>
+    <button class="addbtn" data-add="site">Add site cost</button><div class="chips" id="siteChips"></div>`)}
+  ${panel("Business overheads",`<p class="hint" style="margin-top:0">Annual costs not tied to one job. They are recovered on every job at a rate per crushing hour.</p>
+    <div class="grid">${S.overheads.items.map((o,i)=>fieldHTML(`overheads.items.${i}.amt`,o.name,"num","$/yr")).join("")}
+    ${fieldHTML("overheads.hours","Crushing hours you expect to sell per year","num","hrs",{wide:1})}</div>
+    <div class="chips" id="ohChips"></div>`)}
+  ${panel("Wear-part factors by material",`<div class="grid">${S.materials.map((m,i)=>fieldHTML(`materials.${i}.f`,m.n,"num","x")).join("")}</div>
+    <p class="hint">Relative to medium rock. Calibrate against your own liner cost per tonne between changes.</p>`)}`;
+}
+function renderResult(){
+  document.getElementById("tab-result").innerHTML=`<h2 id="resTitle">Result</h2><div id="resBody"></div>
+  <div class="row-actions noprint" style="flex-wrap:wrap">
+    <button class="btn primary" id="btnShare">Share summary</button>
+    <button class="btn" id="btnCSV">Download CSV</button>
+    <button class="btn" id="btnPrint">Print / save PDF</button>
+  </div>
+  ${panel("Where the default numbers come from",`<ul class="src">
+    <li>Diesel TGP 269.0 c/L national average, 25 Sep 2026 – Australian Institute of Petroleum (via CEIC). Sydney TGP ran from 165.5 c/L (28 Feb 2026) to about 311 c/L in late March 2026, so consider a fuel rise-and-fall clause.</li>
+    <li>Fuel tax credit 53.7 c/L off-road for fuel bought from 3 Aug 2026 – 21.3 c/L on-road heavy rate plus 32.4 c/L road user charge. Confirm on the ATO calculator.</li>
+    <li>Jaw crusher fuel 17–22 L/hr – Metso Lokotrack LT106 brochure.</li>
+    <li>Quarrying Award Level 1 $26.67/hr from 1 Jul 2026; award rates rose 4.75%.</li>
+    <li>Operator rates $35–70/hr – Seek listings, Sep 2026.</li>
+    <li>Float with prime mover $250/hr – Shire of Broome plant hire panel (WA, indicative). $300/hr used for 40 t+ plant.</li>
+    <li>Finance rate 7.4% – 5-year secured equipment finance example, 2026.</li>
+    <li>Estimates, not researched: plant values, lives, repairs & maintenance, wear $/t, workers comp, site costs and overheads. Replace these with your own records.</li>
+  </ul>`)}`;
+}
+function renderAll(){renderJob();renderPlant();renderCrew();renderSite();renderResult();update()}
+
+/* ---------------- Live update of outputs ---------------- */
+const chip=(k,v)=>`<span class="chip">${esc(k)}<b>${v}</b></span>`;
+const setH=(id,h)=>{const e=document.getElementById(id);if(e)e.innerHTML=h};
+const setT=(id,t)=>{const e=document.getElementById(id);if(e)e.textContent=t};
+let R;
+function update(){
+  R=calc(S); const j=S.job;
+  setT("hdrJob",j.name);
+  setT("roCost",$(R.costT,2)); setT("roQuote",$(R.priceT,2)); setT("roDays",n(R.sdays));
+  setH("schedChips",chip("Effective",n(R.etph)+" tph")+chip("Crushing hours",n(R.hrs,1))+chip("Crushing days",n(R.cdays))+chip("Days on site",n(R.sdays))+chip("Weeks",n(R.weeks,1)));
+  setH("fuelChips",chip("Net diesel, plant","$"+n(R.dnet,3)+"/L")+chip("Net diesel, road vehicles","$"+n(R.dnetNe,3)+"/L")+chip("Litres this job",n(R.pt.litres)));
+  S.plant.forEach((p,i)=>{const o=R.plant[i];
+    setT("pv_"+i,p.inc?$(o.job):"off");
+    setH("pc_"+i,chip("Ownership",$(o.own,2)+"/hr")+chip("Fuel",$(o.fuelHr,2)+"/hr")+chip("Total",$(o.tot,2)+"/hr")+chip("Engine hrs",n(o.eh,1))+(p.wear?chip("Wear parts",$(o.wearJ)):""));});
+  setH("plantTot",chip("Ownership",$(R.pt.own))+chip("Fuel",$(R.pt.fuel))+chip("R&M",$(R.pt.rm))+chip("Wear parts",$(R.pt.wear))+chip("Float loads",n(R.pt.loads,1)));
+  setH("oncChips",chip("Total on-cost",pct(R.onc))+chip("Crew on site",n(R.crewOnSite,1))+chip("Crew cost per shift",$(R.crewShift)));
+  S.crew.forEach((c,i)=>{const o=R.crew[i];setT("cv_"+i,c.inc?$(o.tot):"off");
+    setH("cc_"+i,chip("Overtime hrs/shift",n(o.ot,1))+chip("Loaded cost/shift",$(o.loaded))+chip("Loaded $/hr",$(o.hr,2)));});
+  setH("mobChips",chip("Float loads each way",n(R.pt.loads,1))+chip("Hours per load",n(R.floatHrs,1))+chip("Float cost",$(R.floatCost))+chip("Permits & pilots",$(R.permits))+chip("Total",$(R.mob)));
+  setH("travChips",chip("Return trips each",n(R.trips))+chip("Nights each",n(R.nights))+chip("Travel",$(R.travel))+chip("Accommodation",$(R.accom)));
+  S.site.forEach((x,i)=>{setT("sv_"+i,$(R.site[i].amt));setT("sq_"+i,`${BASIS[x.basis]}: ${n(R.site[i].qty,1)} × ${$(x.rate,2)}`)});
+  setH("siteChips",chip("NATA tests",n(R.tests))+chip("Site costs",$(R.siteTot)));
+  setH("ohChips",chip("Annual overheads",$(R.ohAnnual))+chip("Recovery rate",$(R.ohRate,2)+"/hr")+chip("This job",$(R.oh)));
+  // result
+  const max=Math.max(...R.cats.map(c=>c[1]),1);
+  const steps=[-.2,-.1,0,.1,.2], sg=v=>(v>0?"+":"")+Math.round(v*100)+"%";
+  setT("resTitle",j.name);
+  setH("resBody",`
+  <div class="bigprice"><div class="lab">Quote price per tonne, ex GST, at ${pct(j.margin,0)} margin</div>
+    <div class="num">${$(R.priceT,2)}</div>
+    <div class="sub"><span>Quote total <b>${$(R.price)}</b></span><span>Incl. GST <b>${$(R.price*1.1)}</b></span><span>Cost <b>${$(R.costT,2)}/t</b></span><span>Profit <b>${$(R.gp)}</b></span></div></div>
+  <div class="chips" style="margin:0 0 12px">${chip("Tonnes",n(j.tonnes))+chip("Crushing hours",n(R.hrs,1))+chip("Days on site",n(R.sdays))+chip("Crew",n(R.crewOnSite,1))+chip("Diesel",n(R.pt.litres)+" L")+chip("Cost per crushing hr",$(div(R.total,R.hrs)))}</div>
+  <div class="panel"><div class="ph"><h3>Cost build-up</h3></div><div class="pbody">
+  <table><thead><tr><th>Category</th><th>Job $</th><th>$/t</th><th>Share</th></tr></thead><tbody>
+  ${R.cats.map(c=>`<tr><td>${esc(c[0])}<div class="bar"><span style="width:${(c[1]/max*100).toFixed(1)}%"></span></div></td><td>${$(c[1])}</td><td>${$(div(c[1],j.tonnes),2)}</td><td>${pct(div(c[1],R.total))}</td></tr>`).join("")}
+  <tr><td>Subtotal</td><td>${$(R.sub)}</td><td>${$(div(R.sub,j.tonnes),2)}</td><td></td></tr>
+  <tr><td>Contingency (${pct(j.cont,0)})</td><td>${$(R.contA)}</td><td>${$(div(R.contA,j.tonnes),2)}</td><td>${pct(div(R.contA,R.total))}</td></tr>
+  <tr class="tot"><td>Total cost</td><td>${$(R.total)}</td><td>${$(R.costT,2)}</td><td>100%</td></tr>
+  </tbody></table></div></div>
+  <div class="panel"><div class="ph"><h3>What if throughput or diesel changes?</h3></div><div class="pbody">
+  <p class="hint" style="margin-top:0">Cost per tonne. Rows change effective throughput; columns change the net diesel price. Approximate – ignores rounding of days.</p>
+  <div style="overflow-x:auto"><table class="sens"><thead><tr><th>tph \\ diesel</th>${steps.map(d=>`<th>${sg(d)}</th>`).join("")}</tr></thead><tbody>
+  ${steps.map(t=>`<tr><td><b>${sg(t)}</b></td>${steps.map(d=>`<td class="${t===0&&d===0?"base":""}">${$(R.sens(t,d),2)}</td>`).join("")}</tr>`).join("")}
+  </tbody></table></div></div></div>`);
+  autosave();
+}
+
+/* ---------------- Events ---------------- */
+function setPath(path,val){
+  const ks=path.split("."); let o=S;
+  for(let i=0;i<ks.length-1;i++)o=o[ks[i]];
+  o[ks[ks.length-1]]=val;
+}
+document.addEventListener("input",e=>{
+  const t=e.target; if(!t.dataset||!t.dataset.path)return;
+  const ty=t.dataset.type; let v;
+  if(ty==="bool")v=t.checked; else if(ty==="num")v=num(t.value); else if(ty==="pct")v=num(t.value)/100; else v=t.value;
+  setPath(t.dataset.path,v);
+  if(ty==="bool"){const d=t.closest("details.item");if(d&&/\.(inc)$/.test(t.dataset.path))d.classList.toggle("off",!v)}
+  if(/\.(name|role)$/.test(t.dataset.path)){const d=t.closest("details.item");if(d)d.querySelector("summary .iname").textContent=v}
+  if(/^site\.\d+\.name$/.test(t.dataset.path)){}
+  update();
+});
+document.addEventListener("change",e=>{const t=e.target;if(t.tagName==="SELECT"&&t.dataset.path){setPath(t.dataset.path,t.value);update()}});
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b)return;
+  if(b.dataset.tab){showTab(b.dataset.tab);return}
+  if(b.dataset.add){
+    const k=b.dataset.add;
+    if(k==="plant")S.plant.push(P("New plant item",true,1,0,.2,15000,2000,.074,.015,0,1,0,true,0,0,0));
+    if(k==="crew")S.crew.push({role:"New role",inc:true,qty:1,rate:45,ord:7.6,ot:1.5,allow:0});
+    if(k==="site")S.site.push({name:"New site cost",basis:"lump",qty:1,rate:0});
+    rerender(k,S[k].length-1);return;
+  }
+  if(b.dataset.del){
+    const k=b.dataset.del,i=+b.dataset.i;
+    if(!confirm(`Remove “${S[k][i].name||S[k][i].role}”?`))return;
+    S[k].splice(i,1);rerender(k);return;
+  }
+  const id=b.id;
+  if(id==="btnJobs")openJobs();
+  if(id==="dlgClose")document.getElementById("dlgJobs").close();
+  if(id==="btnSave")saveJob();
+  if(id==="btnNew"){if(confirm("Start a new job? Unsaved changes to the current job will be lost.")){S=baseState();S.job.name="New job";renderAll();document.getElementById("dlgJobs").close();showTab("job");toast("New job started")}}
+  if(id==="btnDefaults"){store.set(KEY_DEF,{plant:S.plant,crew:S.crew,oncost:S.oncost,mob:S.mob,site:S.site,overheads:S.overheads,materials:S.materials});toast("New jobs will start with this fleet, crew and costs")}
+  if(id==="btnBackup")download("crushcost-backup.json",JSON.stringify({jobs:store.get(KEY_JOBS)||{},defaults:store.get(KEY_DEF)},null,1),"application/json");
+  if(id==="btnShare")shareSummary();
+  if(id==="btnCSV")download(fileName(".csv"),toCSV(),"text/csv");
+  if(id==="btnPrint")window.print();
+  const lj=b.dataset.load, dj=b.dataset.deljob;
+  if(lj){const jobs=store.get(KEY_JOBS)||{};if(jobs[lj]){S=JSON.parse(JSON.stringify(jobs[lj].state));renderAll();document.getElementById("dlgJobs").close();toast("Opened "+jobs[lj].name)}}
+  if(dj){const jobs=store.get(KEY_JOBS)||{};if(confirm(`Delete saved job “${jobs[dj]?.name}”?`)){delete jobs[dj];store.set(KEY_JOBS,jobs);listJobs()}}
+});
+function rerender(k,openIdx){
+  const map={plant:renderPlant,crew:renderCrew,site:renderSite}; map[k](); update();
+  if(openIdx!=null){const d=document.querySelector(`details.item[data-kind="${k}"][data-i="${openIdx}"]`);if(d){d.open=true;d.scrollIntoView({block:"center"})}}
+}
+function showTab(t){
+  document.querySelectorAll("section.tab").forEach(s=>s.classList.toggle("on",s.id==="tab-"+t));
+  document.querySelectorAll("nav button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t?"true":"false"));
+  window.scrollTo(0,0);
+}
+document.getElementById("fileRestore").addEventListener("change",e=>{
+  const f=e.target.files[0]; if(!f)return;
+  f.text().then(t=>{const d=JSON.parse(t);const jobs=store.get(KEY_JOBS)||{};Object.assign(jobs,d.jobs||{});store.set(KEY_JOBS,jobs);if(d.defaults)store.set(KEY_DEF,d.defaults);listJobs();toast("Backup restored")}).catch(()=>toast("That file isn't a Crush Cost backup"));
+  e.target.value="";
+});
+
+/* ---------------- Jobs ---------------- */
+function openJobs(){listJobs();document.getElementById("dlgJobs").showModal()}
+function listJobs(){
+  const jobs=store.get(KEY_JOBS)||{}, ids=Object.keys(jobs).sort((a,b)=>jobs[b].saved-jobs[a].saved);
+  document.getElementById("jobList").innerHTML=ids.length?ids.map(id=>{const x=jobs[id];
+    return `<li><div class="jn">${esc(x.name)}<small>${esc(x.client||"")} · ${$(x.priceT,2)}/t · saved ${new Date(x.saved).toLocaleDateString("en-AU")}</small></div>
+    <button class="btn" data-load="${id}">Open</button><button class="btn danger" data-deljob="${id}" aria-label="Delete">✕</button></li>`}).join("")
+    :`<li><div class="jn">No saved jobs yet. Tap “Save this job” to keep this estimate.</div></li>`;
+}
+function saveJob(){
+  const jobs=store.get(KEY_JOBS)||{};
+  if(!S.id)S.id="j"+Date.now().toString(36);
+  jobs[S.id]={name:S.job.name,client:S.job.client,priceT:R.priceT,saved:Date.now(),state:JSON.parse(JSON.stringify(S))};
+  if(store.set(KEY_JOBS,jobs)){listJobs();toast("Saved "+S.job.name)} else toast("Couldn't save – storage is full or blocked in this browser");
+}
+
+/* ---------------- Export ---------------- */
+function fileName(ext){return (S.job.name||"job").replace(/[^\w\-]+/g,"_").slice(0,60)+ext}
+function download(name,text,type){
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);
+}
+function summaryText(){
+  const j=S.job;
+  return [`${j.name}`,`${j.client} – ${j.loc}`,`${j.mat} → ${j.prod}`,``,
+   `Tonnes: ${n(j.tonnes)} | Effective ${n(R.etph)} tph | ${n(R.hrs,1)} crushing hrs | ${n(R.sdays)} days on site`,``,
+   ...R.cats.map(c=>`${c[0]}: ${$(c[1])} (${$(div(c[1],j.tonnes),2)}/t)`),
+   `Contingency: ${$(R.contA)}`,`Total cost: ${$(R.total)} (${$(R.costT,2)}/t)`,``,
+   `Quote (ex GST): ${$(R.price)} = ${$(R.priceT,2)}/t at ${pct(j.margin,0)} margin`].join("\n");
+}
+function shareSummary(){
+  const t=summaryText();
+  if(navigator.share)navigator.share({title:S.job.name,text:t}).catch(()=>{});
+  else if(navigator.clipboard)navigator.clipboard.writeText(t).then(()=>toast("Summary copied"),()=>toast("Copy failed – use Download CSV"));
+  else toast("Sharing isn't available in this browser – use Download CSV");
+}
+function toCSV(){
+  const j=S.job,q=v=>`"${String(v).replace(/"/g,'""')}"`,rows=[["Item","Value"],["Job",j.name],["Client",j.client],["Location",j.loc],["Date",j.date],["Material",j.mat],["Product",j.prod],
+   ["Tonnes",j.tonnes],["Effective tph",R.etph.toFixed(1)],["Crushing hours",R.hrs.toFixed(1)],["Days on site",R.sdays],["Crew on site",R.crewOnSite],["Diesel litres",R.pt.litres.toFixed(0)],[],
+   ["Cost category","Job $","$/t"],...R.cats.map(c=>[c[0],c[1].toFixed(2),div(c[1],j.tonnes).toFixed(3)]),
+   ["Contingency",R.contA.toFixed(2),div(R.contA,j.tonnes).toFixed(3)],["Total cost",R.total.toFixed(2),R.costT.toFixed(3)],
+   ["Quote price ex GST",R.price.toFixed(2),R.priceT.toFixed(3)],[],["Plant item","Included","Engine hrs","Ownership $","Fuel $","R&M $","Wear $","Total $"],
+   ...S.plant.map((p,i)=>{const o=R.plant[i];return [p.name,p.inc?"Y":"N",o.eh.toFixed(1),o.ownJ.toFixed(0),o.fuelJ.toFixed(0),o.rmJ.toFixed(0),o.wearJ.toFixed(0),o.job.toFixed(0)]}),
+   [],["Crew role","Included","Headcount","Loaded $/shift","Total $"],...S.crew.map((c,i)=>[c.role,c.inc?"Y":"N",c.qty,R.crew[i].loaded.toFixed(2),R.crew[i].tot.toFixed(0)])];
+  return rows.map(r=>r.map(q).join(",")).join("\r\n");
+}
+let tt;function toast(m){const e=document.getElementById("toast");e.textContent=m;e.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>e.classList.remove("show"),2400)}
+
+/* ---------------- Start ---------------- */
+renderAll();
+if("serviceWorker" in navigator && location.protocol.startsWith("http")){
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>
